@@ -30,9 +30,7 @@ Mengambil filosofi kata **"Riksa"** (Sunda) yang berarti *mengamati dengan saksa
 
 > *Aplikasi web interaktif dengan pipeline komputasi end-to-end, di-deploy secara live di ekosistem Hugging Face Spaces.*
 
-![Tampilan Dashboard](URL_GAMBAR_SCREENSHOT_APLIKASIMU_DI_SINI.png)
-
-*(Catatan: Ganti placeholder gambar di atas dengan screenshot nyata aplikasimu saat sudah di-push ke GitHub)*
+![Tampilan Dashboard](src/Cuplikan%20layar%202026-03-07%20170006.png)
 
 ---
 
