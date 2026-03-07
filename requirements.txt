@@ -1,7 +1,7 @@
 streamlit
 yfinance
 pandas
-numpy
-matplotlib
+numpy<2.0.0
 scikit-learn
 tensorflow-cpu
+plotly
