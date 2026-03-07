@@ -32,7 +32,7 @@ def load_stock_data(ticker):
 # --- 1. INPUT (SIDEBAR) ---
 st.sidebar.header("⚙️ Parameter Input")
 ticker = st.sidebar.text_input("Kode Saham (Contoh: BRMS.JK, AAPL)", value="BRMS.JK")
-window_size = st.sidebar.number_input("Windowing (Hari ke belakang)", min_value=30, max_value=120, value=90, step=10)
+window_size = st.sidebar.number_input("Windowing (Hari ke belakang)", min_value=30, max_value=720, value=90, step=10)
 forecast_days = st.sidebar.number_input("Forecasting (Hari ke depan)", min_value=7, max_value=90, value=30, step=1)
 
 st.sidebar.markdown("---")
