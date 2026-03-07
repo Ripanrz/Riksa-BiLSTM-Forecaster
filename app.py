@@ -17,7 +17,6 @@ st.title("📈 Riksa-BiLSTM: Stock Price Forecaster")
 st.markdown("Aplikasi prediksi harga saham interaktif. Dilengkapi dengan evaluasi metrik dan visualisasi dinamis.")
 
 # --- CACHING FUNGSI DOWNLOAD ---
-# Menyimpan data di cache memori agar tidak perlu download berulang kali jika ticker sama
 @st.cache_data(ttl=3600)
 def load_stock_data(ticker):
     df = yf.download(ticker, start='2020-01-01')
@@ -25,36 +24,39 @@ def load_stock_data(ticker):
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.get_level_values(0)
         df.dropna(inplace=True)
-        # Hilangkan timezone agar aman saat divisualisasikan
         df.index = df.index.tz_localize(None) 
     return df
+
+# --- INISIALISASI SESSION STATE ---
+if 'run_success' not in st.session_state:
+    st.session_state['run_success'] = False
 
 # --- 1. INPUT (SIDEBAR) ---
 st.sidebar.header("⚙️ Parameter Input")
 ticker = st.sidebar.text_input("Kode Saham (Contoh: BRMS.JK, AAPL)", value="BRMS.JK").upper()
-window_size = st.sidebar.number_input("Windowing (Hari ke belakang)", min_value=30, max_value=720, value=90, step=30)
-forecast_days = st.sidebar.number_input("Forecasting (Hari ke depan)", min_value=7, max_value=360, value=30, step=7)
+window_size = st.sidebar.number_input("Windowing (Hari ke belakang)", min_value=30, max_value=360, value=90, step=30)
+forecast_days = st.sidebar.number_input("Forecasting (Hari ke depan)", min_value=7, max_value=120, value=30, step=7)
 
 st.sidebar.markdown("---")
 
 # Validasi Peringatan UI
-if forecast_days > 180:
+if forecast_days > 60:
     st.sidebar.warning("⚠️ Forecasting >60 hari rentan compounding error.")
-if window_size > 360:
+if window_size > 180:
     st.sidebar.info("💡 Windowing besar akan memperlama waktu komputasi.")
     
 st.sidebar.caption("Sistem menggunakan session_state untuk mencegah reload otomatis.")
 
 # --- 2. LOGIKA EKSEKUSI ---
+# Gunakan callback/logika di luar tombol utama untuk menghindari isu reload berulang
 if st.sidebar.button("🚀 Mulai Analisis & Forecasting"):
-    # Hapus hasil sebelumnya jika pengguna memulai analisis baru
-    st.session_state.clear()
+    # Set parameter ke state saat tombol ditekan
+    st.session_state['run_success'] = False
     
     status_text = st.empty()
     progress_bar = st.progress(0)
 
     try:
-        # TAHAP 1: Download Data
         status_text.info(f"Mengunduh data {ticker}...")
         df = load_stock_data(ticker)
         
@@ -63,7 +65,6 @@ if st.sidebar.button("🚀 Mulai Analisis & Forecasting"):
             st.stop()
         progress_bar.progress(15)
 
-        # TAHAP 2: Preprocessing
         status_text.info("Memproses data (Scaling & Windowing)...")
         data_close = df.filter(['Close']).values
         scaler = MinMaxScaler(feature_range=(0, 1))
@@ -76,13 +77,11 @@ if st.sidebar.button("🚀 Mulai Analisis & Forecasting"):
         X, y = np.array(X), np.array(y)
         X = np.reshape(X, (X.shape[0], X.shape[1], 1))
         
-        # Train-Test Split (85% Train, 15% Test)
         train_size = int(len(X) * 0.85)
         X_train, X_test = X[:train_size], X[train_size:]
         y_train, y_test = y[:train_size], y[train_size:]
         progress_bar.progress(30)
 
-        # TAHAP 3: Build & Train Model
         status_text.info("Melatih model BiLSTM... (Mohon tunggu)")
         model = Sequential([
             Bidirectional(LSTM(units=64, return_sequences=True), input_shape=(X_train.shape[1], 1)),
@@ -97,7 +96,6 @@ if st.sidebar.button("🚀 Mulai Analisis & Forecasting"):
         model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=30, callbacks=[early_stop], verbose=0)
         progress_bar.progress(70)
 
-        # TAHAP 4: Evaluasi Test Data
         status_text.info("Menghitung metrik evaluasi...")
         test_predict = model.predict(X_test, verbose=0)
         
@@ -105,14 +103,12 @@ if st.sidebar.button("🚀 Mulai Analisis & Forecasting"):
         y_test_inv = scaler.inverse_transform(y_test.reshape(-1, 1)).flatten()
         test_dates = df.index[-len(y_test):]
 
-        # Menghitung Metrik
         mae = mean_absolute_error(y_test_inv, test_predict_inv)
         rmse = np.sqrt(mean_squared_error(y_test_inv, test_predict_inv))
         mape = np.mean(np.abs((y_test_inv - test_predict_inv) / y_test_inv)) * 100
         r2 = r2_score(y_test_inv, test_predict_inv)
         progress_bar.progress(85)
 
-        # TAHAP 5: Forecasting Iteratif
         status_text.info("Memprediksi masa depan...")
         last_window = data_close[-window_size:]
         last_window_scaled = scaler.transform(last_window)
@@ -131,8 +127,7 @@ if st.sidebar.button("🚀 Mulai Analisis & Forecasting"):
         future_dates = pd.bdate_range(start=last_date + timedelta(days=1), periods=len(forecast_results))
         progress_bar.progress(100)
 
-        # --- MENYIMPAN HASIL KE SESSION STATE ---
-        # Ini adalah kunci agar web tidak lag dan data tidak hilang saat layar digeser
+        # Simpan ke Session State
         st.session_state['run_success'] = True
         st.session_state['ticker'] = ticker
         st.session_state['metrics'] = {'MAE': mae, 'RMSE': rmse, 'MAPE': mape, 'R2': r2}
@@ -152,11 +147,10 @@ if st.sidebar.button("🚀 Mulai Analisis & Forecasting"):
         progress_bar.empty()
         st.error(f"Terjadi kesalahan teknis: {e}")
 
-# --- 3. MENAMPILKAN OUTPUT DARI SESSION STATE ---
+# --- 3. MENAMPILKAN OUTPUT ---
 if st.session_state.get('run_success', False):
     st.success(f"Berhasil memproses {st.session_state['ticker']}!")
 
-    # --- METRIK EVALUASI ---
     st.subheader("🎯 Metrik Akurasi Model")
     m = st.session_state['metrics']
     col1, col2, col3, col4 = st.columns(4)
@@ -167,7 +161,6 @@ if st.session_state.get('run_success', False):
 
     st.markdown("---")
     
-    # --- GRAFIK INTERAKTIF (PLOTLY) ---
     col_chart1, col_chart2 = st.columns(2)
 
     with col_chart1:
@@ -186,12 +179,10 @@ if st.session_state.get('run_success', False):
         fig_fore.update_layout(height=400, margin=dict(l=0, r=0, t=30, b=0), legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1))
         st.plotly_chart(fig_fore, use_container_width=True)
 
-    # --- TABEL FORECASTING ---
     st.markdown("---")
     st.subheader("📋 Tabel Harga Forecasting")
     df_forecast = pd.DataFrame({
         'Tanggal': st.session_state['future_dates'].strftime('%Y-%m-%d'),
         'Harga Prediksi': np.round(st.session_state['forecast_results'], 2)
     })
-    # Tampilkan tabel yang bisa di-scroll dan disortir
     st.dataframe(df_forecast, use_container_width=True, hide_index=True)
