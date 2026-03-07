@@ -10,7 +10,7 @@ python_version: '3.10'
 sdk_version: 1.55.0
 ---
 
-# 📈 Riksa-BiLSTM: Analisis & Prediksi Harga Saham Interaktif
+# 📈 Riksa-BiLSTM: Stock Price Forecaster
 
 [![Live Demo on Hugging Face](https://img.shields.io/badge/Live%20Demo-%F0%9F%A4%97%20Hugging%20Face-blue?style=for-the-badge)](https://huggingface.co/spaces/Ripanrz/Riksa-BiLSTM)
 
