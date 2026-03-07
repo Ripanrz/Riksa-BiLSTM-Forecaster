@@ -6,8 +6,7 @@ colorTo: red
 sdk: streamlit
 app_file: app.py
 pinned: false
-python_version: 3.1
-sdk_version: 1.55.0
+python_version: "3.10"
 ---
 
 # QuantVision: Stock Forecaster
