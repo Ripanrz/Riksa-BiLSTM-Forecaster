@@ -1,5 +1,5 @@
 ---
-title: QuantVision
+title: Riksa-BiLSTM
 emoji: 🚀
 colorFrom: red
 colorTo: red
@@ -10,5 +10,5 @@ python_version: '3.10'
 sdk_version: 1.55.0
 ---
 
-# QuantVision: Stock Forecaster
+# Riksa-BiLSTM: Stock Price Forecaster
 Aplikasi prediksi harga saham menggunakan BiLSTM.
