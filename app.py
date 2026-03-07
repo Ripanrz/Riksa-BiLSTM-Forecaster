@@ -11,9 +11,9 @@ from tensorflow.keras.layers import LSTM, Bidirectional, Dense, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
 
 # --- KONFIGURASI HALAMAN ---
-st.set_page_config(page_title="BiLSTM Stock Forecaster", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Riksa-BiLSTM Stock Forecaster", page_icon="📈", layout="wide")
 
-st.title("📈 Stock Price Forecaster (BiLSTM)")
+st.title("📈 Riksa-BiLSTM: Stock Price Forecaster")
 st.markdown("Aplikasi prediksi harga saham interaktif. Dilengkapi dengan evaluasi metrik dan visualisasi dinamis.")
 
 # --- CACHING FUNGSI DOWNLOAD ---
@@ -32,8 +32,8 @@ def load_stock_data(ticker):
 # --- 1. INPUT (SIDEBAR) ---
 st.sidebar.header("⚙️ Parameter Input")
 ticker = st.sidebar.text_input("Kode Saham (Contoh: BRMS.JK, AAPL)", value="BRMS.JK")
-window_size = st.sidebar.number_input("Windowing (Hari ke belakang)", min_value=30, max_value=120, value=90, step=10)
-forecast_days = st.sidebar.number_input("Forecasting (Hari ke depan)", min_value=7, max_value=90, value=30, step=1)
+window_size = st.sidebar.number_input("Windowing (Hari ke belakang)", min_value=30, max_value=720, value=90, step=10)
+forecast_days = st.sidebar.number_input("Forecasting (Hari ke depan)", min_value=7, max_value=360, value=30, step=1)
 
 st.sidebar.markdown("---")
 st.sidebar.caption("Sistem menggunakan session_state untuk mencegah reload otomatis.")
