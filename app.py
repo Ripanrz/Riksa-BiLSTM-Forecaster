@@ -32,15 +32,15 @@ def load_stock_data(ticker):
 # --- 1. INPUT (SIDEBAR) ---
 st.sidebar.header("⚙️ Parameter Input")
 ticker = st.sidebar.text_input("Kode Saham (Contoh: BRMS.JK, AAPL)", value="BRMS.JK").upper()
-window_size = st.sidebar.number_input("Windowing (Hari ke belakang)", min_value=30, max_value=360, value=90, step=30)
-forecast_days = st.sidebar.number_input("Forecasting (Hari ke depan)", min_value=7, max_value=90, value=30, step=7)
+window_size = st.sidebar.number_input("Windowing (Hari ke belakang)", min_value=30, max_value=720, value=90, step=30)
+forecast_days = st.sidebar.number_input("Forecasting (Hari ke depan)", min_value=7, max_value=360, value=30, step=7)
 
 st.sidebar.markdown("---")
 
 # Validasi Peringatan UI
-if forecast_days > 60:
+if forecast_days > 180:
     st.sidebar.warning("⚠️ Forecasting >60 hari rentan compounding error.")
-if window_size > 180:
+if window_size > 360:
     st.sidebar.info("💡 Windowing besar akan memperlama waktu komputasi.")
     
 st.sidebar.caption("Sistem menggunakan session_state untuk mencegah reload otomatis.")
