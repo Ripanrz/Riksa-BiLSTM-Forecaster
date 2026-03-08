@@ -39,7 +39,7 @@ if 'run_success' not in st.session_state:
 st.sidebar.header("⚙️ Parameter Input")
 ticker = st.sidebar.text_input("Kode Saham (Contoh: BRMS.JK, AAPL)", value="BRMS.JK").upper()
 window_size = st.sidebar.number_input("Windowing (Hari ke belakang)", min_value=30, max_value=360, value=90, step=30)
-forecast_days = st.sidebar.number_input("Forecasting (Hari ke depan)", min_value=7, max_value=120, value=30, step=7)
+forecast_days = st.sidebar.number_input("Forecasting (Hari ke depan)", min_value=7, max_value=120, value=30, step=5)
 
 st.sidebar.markdown("---")
 if forecast_days > 60:
